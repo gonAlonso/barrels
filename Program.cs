@@ -25,11 +25,19 @@ namespace dotNet
             this.inside = inner;
             return true;
         }
+
+        public Barrel getInnerMostBarrel()
+        {
+            if(this.inside==null)
+                return this;
+            else
+                return this.inside.getInnerMostBarrel();
+        }
         public void printContent()
         {
-            Console.WriteLine( "Barrel with: %d height: %d\nInside:", this.width, this.height);
+            Console.Write( $"Barrel width: {this.width} height: {this.height} >> ");
             if( this.inside == null)
-                Console.WriteLine("Empty\n");
+                Console.Write("Empty\n");
             else
                 this.inside.printContent();
         }
@@ -39,13 +47,13 @@ namespace dotNet
     {
         static void Main(string[] args)
         {
-            Console.WriteLine("Hello World!");
-            var inList = new List<Barrel>();
-            inList.Add( new Barrel(15, 31));
-            inList.Add( new Barrel(4, 29));
-            inList.Add( new Barrel(11, 22));
+            Console.WriteLine("Creating Barrels!");
+            var inList = new Queue<Barrel>();
+            inList.Enqueue( new Barrel(15, 31));
+            inList.Enqueue( new Barrel(4, 29));
+            inList.Enqueue( new Barrel(11, 22));
 
-            List<Barrel> outList = getPackedBarrelsList(inList);
+            Queue<Barrel> outList = getPackedBarrelsList(inList);
             foreach( Barrel elm in outList)
             {
                 elm.printContent();
@@ -58,34 +66,42 @@ namespace dotNet
             return null;
         }
 
-        static List<Barrel> getPackedBarrelsList(List<Barrel> inputList)
+        static Queue<Barrel> getPackedBarrelsList(Queue<Barrel> inputList)
         {
-            var outList = new List<Barrel>();
+            var outList = new Queue<Barrel>();
             //foreach( Barrel inElm in inputList)
             while(inputList.Count >0)
             {
-                Barrel elm = inputList.
+                Barrel inElm = inputList.Dequeue();
                 if(outList.Count == 0)
                 {
-                    outList.Add( inElm );
-                    inputList.Remove( inElm );
+                    Console.Write( "First element: ");
+                    inElm.printContent();
+                    outList.Enqueue( inElm );
                     continue;
                 }
 
                 foreach( Barrel outElm in outList)
                 {
-                    if(inElm.fitsInsideOf( outElm ))
+                    Barrel innerBarrel = outElm.getInnerMostBarrel();
+                    Console.Write( "Testing: ");
+                    inElm.printContent();
+                    if( inElm.fitsInsideOf( innerBarrel ))
                     {
-                        outElm.putElementInside(inElm);
-                        inputList.Remove( inElm );
+                        Console.WriteLine( "Fits!!");
+                        innerBarrel.putElementInside(inElm);
+                        inElm = null;
                         break;
                     }
                 }
-                // Defaults adding it to the outList directly
-                outList.Add( inElm );
-                inputList.Remove( inElm );
-            }
 
+                if ( inElm!=null ) 
+                {
+                    inElm.printContent();
+                    outList.Enqueue( inElm );
+                }
+            }
+            Console.Write( "\n");
             return outList;
         }
     }
