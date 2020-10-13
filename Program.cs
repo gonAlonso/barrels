@@ -1,15 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 
 namespace dotNet
 {
     internal class Barrel
     {
+        private int id;
         private int height;
         private int width;
         private Barrel inside = null;
-        public Barrel(int width, int height)
+        public Barrel(int ID, int width, int height)
         {
+            this.id = ID;
             this.width = width;
             this.height = height;
         }
@@ -35,9 +38,9 @@ namespace dotNet
         }
         public void printContent()
         {
-            Console.Write( $"Barrel width: {this.width} height: {this.height} >> ");
+            Console.Write( $"{this.id} " );
             if( this.inside == null)
-                Console.Write("Empty\n");
+                Console.Write("\n");
             else
                 this.inside.printContent();
         }
@@ -47,36 +50,55 @@ namespace dotNet
     {
         static void Main(string[] args)
         {
-            Console.WriteLine("Creating Barrels!");
-            var inList = new Queue<Barrel>();
-            inList.Enqueue( new Barrel(15, 31));
-            inList.Enqueue( new Barrel(4, 29));
-            inList.Enqueue( new Barrel(11, 22));
-
-            Queue<Barrel> outList = getPackedBarrelsList(inList);
-            foreach( Barrel elm in outList)
+            var inList = readBarrelsFile( "barrels.txt" );
+            Queue<Barrel> packedList = getPackedBarrelsList(inList);
+            foreach( Barrel elm in packedList)
             {
                 elm.printContent();
             }
 
         }
 
-        List<Barrel> readBarrelsFile(string fileName)
+        static Queue<Barrel> readBarrelsFile(string fileName)
         {
+            Queue<Barrel> barrelList = new Queue<Barrel>();
+            try
+            {
+                using (var inputFile = new StreamReader( fileName ))
+                {
+                    while( !inputFile.EndOfStream)
+                    {
+                        string newLine = inputFile.ReadLine();
+                        string[] newBarrelData = newLine.Split(' ');
+                        int id = int.Parse( newBarrelData[0] );
+                        int diameter = int.Parse( newBarrelData[1] );
+                        int height = int.Parse( newBarrelData[2] );
+                        barrelList.Enqueue( new Barrel( id, diameter, height));
+                    }
+
+                    return barrelList;
+                }
+            }
+            catch(FormatException f)
+            {
+                Console.WriteLine($"Unexpected file data: {f}");
+            }
+            catch (IOException e)
+            {
+                Console.WriteLine($"The file could not be read: {e}");
+            }
             return null;
         }
+
 
         static Queue<Barrel> getPackedBarrelsList(Queue<Barrel> inputList)
         {
             var outList = new Queue<Barrel>();
-            //foreach( Barrel inElm in inputList)
             while(inputList.Count >0)
             {
                 Barrel inElm = inputList.Dequeue();
                 if(outList.Count == 0)
                 {
-                    Console.Write( "First element: ");
-                    inElm.printContent();
                     outList.Enqueue( inElm );
                     continue;
                 }
@@ -84,11 +106,8 @@ namespace dotNet
                 foreach( Barrel outElm in outList)
                 {
                     Barrel innerBarrel = outElm.getInnerMostBarrel();
-                    Console.Write( "Testing: ");
-                    inElm.printContent();
                     if( inElm.fitsInsideOf( innerBarrel ))
                     {
-                        Console.WriteLine( "Fits!!");
                         innerBarrel.putElementInside(inElm);
                         inElm = null;
                         break;
@@ -97,11 +116,9 @@ namespace dotNet
 
                 if ( inElm!=null ) 
                 {
-                    inElm.printContent();
                     outList.Enqueue( inElm );
                 }
             }
-            Console.Write( "\n");
             return outList;
         }
     }
