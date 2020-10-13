@@ -1,4 +1,5 @@
-﻿using System;
+﻿#define ZDEBUG 
+using System;
 using System.Collections.Generic;
 using System.IO;
 
@@ -16,6 +17,8 @@ namespace dotNet
             this.width = width;
             this.height = height;
         }
+
+        public int ID{ get {return this.id;} }
         public bool fitsInsideOf(Barrel outer)
         {
             if(outer.height > this.height && outer.width > this.width) return true;
@@ -25,7 +28,16 @@ namespace dotNet
         public bool putElementInside(Barrel inner)
         {
             if (!inner.fitsInsideOf(this)) return false;
+            if(this.inside == null)
+            {
+                this.inside = inner;
+                return true;
+            }
+            if (!this.inside.fitsInsideOf(inner)) return false;
+            
+            Barrel temp = this.inside;
             this.inside = inner;
+            inner.inside = temp;
             return true;
         }
 
@@ -45,6 +57,8 @@ namespace dotNet
                 this.inside.printContent();
         }
     }
+
+
 
     class Program
     {
@@ -94,21 +108,36 @@ namespace dotNet
         static Queue<Barrel> getPackedBarrelsList(Queue<Barrel> inputList)
         {
             var outList = new Queue<Barrel>();
-            while(inputList.Count >0)
+            while( inputList.Count >0)
             {
                 Barrel inElm = inputList.Dequeue();
-                if(outList.Count == 0)
+                if( outList.Count == 0)
                 {
+                    #if ZDEBUG
+                    Console.WriteLine( $"First elm is {inElm.ID}");
+                    #endif
                     outList.Enqueue( inElm );
+                    continue;
+                }
+
+                if( outList.Peek().fitsInsideOf( inElm ) )
+                {
+                    Barrel takenFromOutList = outList.Dequeue();
+                    inElm.putElementInside( takenFromOutList );
+                    outList.Enqueue( inElm );
+                    #if ZDEBUG
+                    Console.WriteLine( $"{takenFromOutList.ID} goes inside {inElm.ID}, as root");
+                    #endif
                     continue;
                 }
 
                 foreach( Barrel outElm in outList)
                 {
-                    Barrel innerBarrel = outElm.getInnerMostBarrel();
-                    if( inElm.fitsInsideOf( innerBarrel ))
+                    if (outElm.putElementInside( inElm ))
                     {
-                        innerBarrel.putElementInside(inElm);
+                        #if ZDEBUG
+                        Console.WriteLine( $"{inElm.ID} goes inside {outElm.ID}, as child");
+                        #endif
                         inElm = null;
                         break;
                     }
@@ -116,6 +145,9 @@ namespace dotNet
 
                 if ( inElm!=null ) 
                 {
+                    #if ZDEBUG
+                    Console.WriteLine( $"{inElm.ID} goes to the out List root ELM");
+                    #endif
                     outList.Enqueue( inElm );
                 }
             }
