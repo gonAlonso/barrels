@@ -10,19 +10,19 @@ namespace dotNet
     {
         private int id;
         private int height;
-        private int width;
+        private int diameter;
         private Barrel inside = null;
-        public Barrel(int ID, int width, int height)
+        public Barrel(int ID, int diameter, int height)
         {
             this.id = ID;
-            this.width = width;
+            this.diameter = diameter;
             this.height = height;
         }
 
         public bool fitsInsideOf(Barrel outer)
         {
-            if(outer.height > this.height && outer.width > this.width) return true;
-            if(outer.width > this.height && outer.height > this.width) return true;
+            if(outer.height > this.height && outer.diameter > this.diameter) return true;
+            if(outer.diameter > this.height && outer.height > this.diameter) return true;
             return false;
         }
 
@@ -34,9 +34,9 @@ namespace dotNet
             return true;
         }
 
-        public int getArea()
+        public int getVolume()
         {
-            return this.width * this.height;
+            return this.diameter * this.height;
         }
 
         public void printContent()
@@ -53,11 +53,11 @@ namespace dotNet
     }
 
 
-    public class ByArea : IComparer<Barrel>
+    public class ByVolume : IComparer<Barrel>
     {
         public int Compare(Barrel A, Barrel B)
         {
-            return B.getArea() - A.getArea();
+            return B.getVolume() - A.getVolume();
         }
     }
 
@@ -67,9 +67,7 @@ namespace dotNet
         static void Main(string[] args)
         {
             var inputList = readBarrelsFile( "barrels.txt" );
-            printBarrelsList(inputList);
-            inputList.Sort( new ByArea() );
-            printBarrelsList(inputList);
+            inputList.Sort( new ByVolume() );
             var packedList = packBarrelsOfList(inputList);
             printBarrelsList(packedList);
         }
