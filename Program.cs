@@ -19,27 +19,11 @@ namespace dotNet
             this.height = height;
         }
 
-        public int ID{ get {return this.id;} }
         public bool fitsInsideOf(Barrel outer)
         {
             if(outer.height > this.height && outer.width > this.width) return true;
             if(outer.width > this.height && outer.height > this.width) return true;
             return false;
-        }
-        public bool putElementInside(Barrel inner)
-        {
-            if (!inner.fitsInsideOf(this)) return false;
-            if(this.inside == null)
-            {
-                this.inside = inner;
-                return true;
-            }
-            if ( !this.inside.fitsInsideOf( inner )) return false;
-            
-            Barrel temp = this.inside;
-            this.inside = inner;
-            inner.inside = temp;
-            return true;
         }
 
           public bool putInside(Barrel inner)
