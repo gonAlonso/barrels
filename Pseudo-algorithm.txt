@@ -1,7 +1,7 @@
 1- Read barrels
 2- Order by area
 3- take bigger one, put in out list
-4- Select biggest barrel that fits inside this barrel
+4- Take the biggest barrel that fits inside this barrel
 5- repeat 4 until no barrel fits inside
 6- repeat 3 until no barrel in input list
 7- done

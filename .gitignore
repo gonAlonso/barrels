@@ -1,2 +1,5 @@
+.gitignore
 bin
 obj
+Pseudo-algorithm.txt
+barrels.txt
