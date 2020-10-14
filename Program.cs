@@ -2,10 +2,11 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 
 namespace dotNet
 {
-    internal class Barrel
+    public class Barrel
     {
         private int id;
         private int height;
@@ -33,7 +34,7 @@ namespace dotNet
                 this.inside = inner;
                 return true;
             }
-            if (!this.inside.fitsInsideOf(inner)) return false;
+            if ( !this.inside.fitsInsideOf( inner )) return false;
             
             Barrel temp = this.inside;
             this.inside = inner;
@@ -41,9 +42,25 @@ namespace dotNet
             return true;
         }
 
+          public bool putInside(Barrel inner)
+        {
+            if( !inner.fitsInsideOf( this )) return false;
+            if( this.inside != null ) return false;
+            this.inside = inner;
+            return true;
+        }
+
+        public int getArea()
+        {
+            return this.width * this.height;
+        }
+
         public void printContent()
         {
             Console.Write( $"{this.id} " );
+            #if ZDEBUG
+            Console.Write( $": {this.getArea()} " );
+            #endif
             if( this.inside == null)
                 Console.Write("\n");
             else
@@ -52,23 +69,41 @@ namespace dotNet
     }
 
 
+    public class ByArea : IComparer<Barrel>
+    {
+        public int Compare(Barrel A, Barrel B)
+        {
+            return B.getArea() - A.getArea();
+        }
+    }
+
 
     class Program
     {
         static void Main(string[] args)
         {
-            var inList = readBarrelsFile( "barrels.txt" );
-            Queue<Barrel> packedList = createPackedBarrelsList(inList);
-            foreach( Barrel elm in packedList)
+            var inputList = readBarrelsFile( "barrels.txt" );
+            printBarrelsList(inputList);
+            inputList.Sort( new ByArea() );
+            printBarrelsList(inputList);
+            var packedList = packBarrelsOfList(inputList);
+            printBarrelsList(packedList);
+        }
+
+        static void printBarrelsList(List<Barrel> list)
+        {
+            Console.WriteLine( "Barrels list" );
+            foreach( Barrel elm in list)
             {
                 elm.printContent();
             }
 
         }
 
-        static Queue<Barrel> readBarrelsFile(string fileName)
+
+        static List<Barrel> readBarrelsFile(string fileName)
         {
-            Queue<Barrel> barrelList = new Queue<Barrel>();
+            List<Barrel> barrelList = new List<Barrel>();
             try
             {
                 using (var inputFile = new StreamReader( fileName ))
@@ -80,7 +115,7 @@ namespace dotNet
                         int id = int.Parse( newBarrelData[0] );
                         int diameter = int.Parse( newBarrelData[1] );
                         int height = int.Parse( newBarrelData[2] );
-                        barrelList.Enqueue( new Barrel( id, diameter, height));
+                        barrelList.Add( new Barrel( id, diameter, height));
                     }
 
                     return barrelList;
@@ -98,53 +133,32 @@ namespace dotNet
         }
 
 
-        static Queue<Barrel> createPackedBarrelsList(Queue<Barrel> inputList)
+        static List<Barrel> packBarrelsOfList(List<Barrel> inputList)
         {
-            var outList = new Queue<Barrel>();
-            while( inputList.Count >0)
+            if( inputList.Count == 0 ) return null;
+
+            var outList = new List<Barrel>();
+
+            while( inputList.Count > 0 )
             {
-                Barrel inElm = inputList.Dequeue();
-                if( outList.Count == 0)
-                {
-                    #if ZDEBUG
-                    Console.WriteLine( $"First elm is {inElm.ID}");
-                    #endif
-                    outList.Enqueue( inElm );
-                    continue;
-                }
+                var outBarrel = inputList.First();
+                outList.Add( outBarrel );
+                inputList.Remove( outBarrel );
 
-                if( outList.Peek().fitsInsideOf( inElm ) )
+                var it = inputList.GetEnumerator();
+                while( it.MoveNext() )
                 {
-                    Barrel takenFromOutList = outList.Dequeue();
-                    inElm.putElementInside( takenFromOutList );
-                    outList.Enqueue( inElm );
-                    #if ZDEBUG
-                    Console.WriteLine( $"{takenFromOutList.ID} goes inside {inElm.ID}, as root");
-                    #endif
-                    continue;
-                }
-
-                foreach( Barrel outElm in outList)
-                {
-                    if (outElm.putElementInside( inElm ))
+                    var inputBarrel = it.Current;
+                    if( outBarrel.putInside(inputBarrel))
                     {
-                        #if ZDEBUG
-                        Console.WriteLine( $"{inElm.ID} goes inside {outElm.ID}, as child");
-                        #endif
-                        inElm = null;
-                        break;
+                        outBarrel = inputBarrel;
+                        inputList.Remove( inputBarrel );
+                        it = inputList.GetEnumerator();
                     }
-                }
-
-                if ( inElm!=null ) 
-                {
-                    #if ZDEBUG
-                    Console.WriteLine( $"{inElm.ID} goes to the out List root ELM");
-                    #endif
-                    outList.Enqueue( inElm );
                 }
             }
             return outList;
         }
+
     }
 }
