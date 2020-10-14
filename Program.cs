@@ -41,13 +41,6 @@ namespace dotNet
             return true;
         }
 
-        public Barrel getInnerMostBarrel()
-        {
-            if(this.inside==null)
-                return this;
-            else
-                return this.inside.getInnerMostBarrel();
-        }
         public void printContent()
         {
             Console.Write( $"{this.id} " );
@@ -65,7 +58,7 @@ namespace dotNet
         static void Main(string[] args)
         {
             var inList = readBarrelsFile( "barrels.txt" );
-            Queue<Barrel> packedList = getPackedBarrelsList(inList);
+            Queue<Barrel> packedList = createPackedBarrelsList(inList);
             foreach( Barrel elm in packedList)
             {
                 elm.printContent();
@@ -105,7 +98,7 @@ namespace dotNet
         }
 
 
-        static Queue<Barrel> getPackedBarrelsList(Queue<Barrel> inputList)
+        static Queue<Barrel> createPackedBarrelsList(Queue<Barrel> inputList)
         {
             var outList = new Queue<Barrel>();
             while( inputList.Count >0)
