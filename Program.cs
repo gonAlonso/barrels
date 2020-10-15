@@ -35,16 +35,16 @@ namespace dotNet
             return true;
         }
 
-        public int getVolume()
+        public float getVolume()
         {
-            return this.diameter * this.height;
+            return (float)(Math.PI * Math.Pow( this.diameter/2, 2) * this.height);
         }
 
         public void printContent()
         {
             Console.Write( $"{this.id} " );
             #if ZDEBUG
-            Console.Write( $": {this.getArea()} " );
+            Console.Write( $": {this.getVolume()} " );
             #endif
             if( this.inside == null)
                 Console.Write("\n");
@@ -58,7 +58,7 @@ namespace dotNet
     {
         public int Compare(Barrel A, Barrel B)
         {
-            return B.getVolume() - A.getVolume();
+            return (int) (B.getVolume() - A.getVolume());
         }
     }
 
