@@ -22,7 +22,8 @@ namespace dotNet
         public bool fitsInsideOf(Barrel outer)
         {
             if(outer.height > this.height && outer.diameter > this.diameter) return true;
-            if(outer.diameter > this.height && outer.height > this.diameter) return true;
+            var h = Math.Sqrt( Math.Pow( this.height, 2 ) + Math.Pow( outer.diameter, 2) );
+            if ( this.diameter < h) return true;
             return false;
         }
 
